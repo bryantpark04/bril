@@ -1,4 +1,6 @@
 from pydantic import BaseModel
+
+from abc import ABC
 from typing import Literal, NewType
 
 
@@ -9,7 +11,7 @@ type Type = PrimitiveType | Pointer
 
 type ConstantValue = int | float | bool | str
 
-type Operation = ArgumentedValueOperation | ArgumentedOperation | EmptyOperation | LabelOperation | FunctionCall | Return | EffectOperation | PhiOperation
+type Operation = DataOperation | EmptyOperation | LabelOperation | FunctionCall | ReturnStatement | EffectOperation
 type Instruction = Constant | Operation
 
 
@@ -31,24 +33,20 @@ class FunctionArgument(StrictBaseModel):
     type: Type
 
 
-class Label(StrictBaseModel):
+class BaseEntity(StrictBaseModel):
+    pos: Position | None = None
+
+
+class BaseOperation(BaseEntity):
+    op: str
+
+
+class Label(BaseEntity):
     label: Identifier
-    pos: Position | None = None
 
-
-class Constant(StrictBaseModel):
-    op: Literal["const"]
-    value: ConstantValue
-    dest: Identifier
-    type: Type
-    pos: Position | None = None
-
-
-class BaseOperation(StrictBaseModel):
-    pos: Position | None = None
 
 # TODO somehow mark operations that may have side effects
-# TODO somehow classify operations better
+
 
 class ArgumentedOperation(BaseOperation):
     args: list[Identifier]
@@ -59,7 +57,12 @@ class ValueOperation(BaseOperation):
     type: Type
 
 
-class ArgumentedValueOperation(ArgumentedOperation, ValueOperation):
+class Constant(ValueOperation):
+    op: Literal["const"]
+    value: ConstantValue
+
+
+class DataOperation(ArgumentedOperation, ValueOperation):
     op: Literal[ 
         "id", 
         "add", "mul", "sub", "div",
@@ -78,17 +81,11 @@ class EmptyOperation(BaseOperation):
 
 
 class LabelOperation(BaseOperation):
-    op: Literal["guard", "br", "jmp"]
+    op: Literal["guard", "br", "jmp", "phi"]
     labels: list[Identifier]
     args: list[Identifier] | None = None    # for guard only
-
-
-class PhiOperation(BaseOperation):
-    op: Literal["phi"]
-    labels: list[Identifier]
-    args: list[Identifier]
-    type: Type
-    dest: Identifier
+    type: Type | None = None    # for phi only
+    dest: Identifier | None = None  # for phi only
 
 
 class EffectOperation(ArgumentedOperation):
@@ -103,17 +100,16 @@ class FunctionCall(BaseOperation):
     type: Type | None = None
 
 
-class Return(BaseOperation):
+class ReturnStatement(BaseOperation):
     op: Literal["ret"]
     args: list[Identifier] | None = None
 
 
-class Function(StrictBaseModel):
+class Function(BaseEntity):
     name: Identifier
     args: list[FunctionArgument] | None = None
     instrs: list[Label | Instruction]
     type: Type | None = None
-    pos: Position | None = None
 
 
 class Program(StrictBaseModel):
