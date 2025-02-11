@@ -1,0 +1,1 @@
+You can test the Pydantic models on all the benchmarks by running `find benchmarks/  -type f -name "*.bril" -exec sh -c 'bril2json < "$1" | python -m bril-py.test' _ {} \;` from the `bril` repository root.
