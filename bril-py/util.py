@@ -1,6 +1,6 @@
 import sys
 
-from bril import Program
+from .bril import Program
 
 
 def read_std_in() -> Program:

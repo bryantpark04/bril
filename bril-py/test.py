@@ -1,7 +1,7 @@
 from pydantic import ValidationError
 
-from util import read_std_in
-from bril import Program
+from .util import read_std_in
+from .bril import Program
 
 
 def main():
