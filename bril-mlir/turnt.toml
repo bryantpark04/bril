@@ -3,9 +3,9 @@
 # output.out = "-"
 
 [envs.ssa_roundtrip]
-command = "bril2json < {filename} | python ssa-old/to_ssa.py | python ssa-old/from_ssa.py | deno ssa-old/brili.ts {args}"
+command = "bril2json < {filename} | python ssa-old/to_ssa.py | python ssa-old/tdce.py tdce+ | python ssa-old/from_ssa.py | python ssa-old/tdce.py tdce+ | deno ssa-old/brili.ts {args}"
 output.out = "-"
 
 [envs.ssa_mlir_roundtrip]
-command = "bril2json < {filename} | python ssa-old/to_ssa.py | ./llvm-project/build/bin/brilc -emit=mlir | ./llvm-project/build/bin/brilc -emit=convert | python ssa-old/from_ssa.py | deno ssa-old/brili.ts {args}"
+command = "bril2json < {filename} | python ssa-old/to_ssa.py | python ssa-old/tdce.py tdce+ | ./llvm-project/build/bin/brilc -emit=mlir | ./llvm-project/build/bin/brilc -emit=convert | python ssa-old/from_ssa.py | python ssa-old/tdce.py tdce+ | deno ssa-old/brili.ts {args}"
 output.out = "-"
